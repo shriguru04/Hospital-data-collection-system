@@ -11,9 +11,10 @@ start fine with zero keys set and will simply run in MOCK data mode.
 import os
 
 # --- General -----------------------------------------------------------
-HOST = os.environ.get("HOST", "127.0.0.1")
-PORT = int(os.environ.get("PORT", "5000"))
-DEBUG = os.environ.get("DEBUG", "true").lower() == "true"
+# --- General -----------------------------------------------------------
+HOST = os.environ.get("HOST", "0.0.0.0")
+PORT = int(os.environ.get("PORT", "10000"))
+DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # --- Data source mode ---------------------------------------------------
 # "mock"   -> uses sample_data/mock_hospitals.json (default, no internet
