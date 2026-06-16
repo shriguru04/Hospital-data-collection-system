@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Generated export files (keep the folder, ignore its contents)
+outputs/*
+!outputs/.gitkeep

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Data Collection Agent — Case File Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__title">
+      <span class="topbar__mark">▣</span>
+      <div>
+        <h1>Hospital Data Collection Agent</h1>
+        <p class="topbar__subtitle">Case File Console &mdash; conversational data request &amp; export</p>
+      </div>
+    </div>
+    <div class="topbar__status">
+      <span class="pill" id="sourcePill">source: …</span>
+      <span class="pill" id="plannerPill">planner: …</span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- ============ LEFT: CONVERSATION ============ -->
+    <section class="panel panel--chat" aria-label="Conversation with the agent">
+      <div class="panel__header">
+        <h2>Conversation</h2>
+        <p class="panel__hint">Describe what you need — location, hospital type, fields, output format.</p>
+      </div>
+
+      <div class="chat__log" id="chatLog" aria-live="polite"></div>
+
+      <div class="chat__filters" id="filterChips" aria-label="Current search filters"></div>
+
+      <form class="chat__composer" id="chatForm">
+        <input
+          type="text"
+          id="chatInput"
+          class="chat__input"
+          placeholder="e.g. hospitals in Andheri, Mumbai, Maharashtra, India — top 10, detailed information, export as xlsx"
+          autocomplete="off"
+        />
+        <button type="submit" class="btn btn--primary">Send</button>
+      </form>
+
+      <div class="chat__actions">
+        <button id="runSearchBtn" class="btn btn--accent" disabled>Run Search</button>
+        <span class="chat__actions-hint" id="readyHint">Add a location to enable search.</span>
+      </div>
+    </section>
+
+    <!-- ============ RIGHT: PIPELINE + RESULTS ============ -->
+    <aside class="panel panel--side" aria-label="Pipeline status and results">
+
+      <div class="ledger" aria-label="Workflow pipeline status">
+        <h2 class="ledger__title">Pipeline Ledger</h2>
+        <ol class="ledger__list" id="ledgerList">
+          <li data-step="1"><span class="ledger__num">01</span><span class="ledger__label">Understand request</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="2"><span class="ledger__num">02</span><span class="ledger__label">Identify location</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="3"><span class="ledger__num">03</span><span class="ledger__label">Search trusted sources</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="4"><span class="ledger__num">04</span><span class="ledger__label">Collect records</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="5"><span class="ledger__num">05</span><span class="ledger__label">Validate records</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="6"><span class="ledger__num">06</span><span class="ledger__label">Remove duplicates</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="7"><span class="ledger__num">07</span><span class="ledger__label">Normalize data</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="8"><span class="ledger__num">08</span><span class="ledger__label">Map to schema</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="9"><span class="ledger__num">09</span><span class="ledger__label">Generate report</span><span class="stamp" data-stamp>pending</span></li>
+          <li data-step="10"><span class="ledger__num">10</span><span class="ledger__label">Export format</span><span class="stamp" data-stamp>pending</span></li>
+        </ol>
+      </div>
+
+      <div class="card" id="qualityCard" hidden>
+        <h2 class="card__title">Data Quality Report</h2>
+        <dl class="quality__grid" id="qualityGrid"></dl>
+      </div>
+
+      <div class="card" id="resultsCard" hidden>
+        <div class="card__header-row">
+          <h2 class="card__title">Results</h2>
+          <span class="record-count" id="recordCount"></span>
+        </div>
+        <div class="table-wrap">
+          <table id="resultsTable">
+            <thead><tr id="resultsHead"></tr></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" id="exportCard" hidden>
+        <h2 class="card__title">Export</h2>
+
+        <details class="schema-details">
+          <summary>Custom schema / template (optional)</summary>
+          <p class="panel__hint">Paste your template's column headers, comma-separated, to map results onto your exact columns. Unmatched columns export as "N/A".</p>
+          <textarea id="customHeaders" rows="2" placeholder="Hospital, Contact Number, City, Pincode, Specialty"></textarea>
+          <button id="guessMappingBtn" class="btn btn--secondary" type="button">Guess Mapping</button>
+          <div id="mappingTable"></div>
+        </details>
+
+        <div class="export__row">
+          <label for="formatSelect">Format</label>
+          <select id="formatSelect">
+            <option value="xlsx">Excel (.xlsx)</option>
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+            <option value="pdf">PDF</option>
+          </select>
+          <button id="exportBtn" class="btn btn--accent">Generate File</button>
+        </div>
+        <div id="downloadArea"></div>
+      </div>
+
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <p>
+      Data source mode: <strong id="footerSourceMode">mock</strong> —
+      records are <em>illustrative sample data</em> unless a real data source is configured.
+      See <code>README.md</code> for switching to live sources and the data-integrity rules this agent follows.
+    </p>
+  </footer>
+  <h1>shriguru thube</h1>
+
+  <script src="script.js"></script>
+</body>
+</html>
